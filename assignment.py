@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_score
 import seaborn as sns
 
@@ -46,15 +47,33 @@ def evaluate_model(model, X_test):
 
 def plot_strategy_returns(model, df, X, split):
     """Plot cumulative strategy returns."""
+    # Calculate Predicted Signal
     df['Predicted_Signal'] = model.predict(X)
-    df['AAPL_returns'] = np.log(df['Close'] / df['Close'].shift(1))
-    Cumulative_AAPL_returns = np.cumsum(df[split:]['AAPL_returns'])
-    df['Strategy_returns'] = df['AAPL_returns'] * df['Predicted_Signal'].shift(1)
+
+    # Calculate AAPL Returns
+    df['TSLA_returns'] = np.log(df['Close']/df['Close'].shift(1))
+
+    # Calculate Cumulative AAPL Returns
+    Cumulative_TSLA_returns = np.cumsum(df[split:]['TSLA_returns'])
+
+    # Calculate Strategy Returns
+    df['Strategy_returns'] = df['TSLA_returns'] * df['Predicted_Signal'].shift(1)
+
+    # Calculate Cumulative Strategy Returns
     Cumulative_Strategy_returns = np.cumsum(df[split:]['Strategy_returns'])
-    plt.figure(figsize=(10, 5))
-    plt.plot(Cumulative_Strategy_returns, color='g', label='Strategy Returns')
+
+    # Plotting
+    plt.figure(figsize=(10,5))
+
+    # Plot Cumulative AAPL Returns
+    plt.plot(Cumulative_TSLA_returns, color='b', label='Cumulative Actual Returns')
+
+    # Plot Cumulative Strategy Returns
+    plt.plot(Cumulative_Strategy_returns, color='g', label='Cumulative Strategy Returns')
+
     plt.legend()
     plt.show()
+
 
 def plot_confusion_matrix(y_true, y_pred):
     """Compute confusion matrix and plot as heatmap."""
@@ -65,6 +84,9 @@ def plot_confusion_matrix(y_true, y_pred):
     plt.ylabel('True labels')
     plt.title('Confusion Matrix')
     plt.show()
+
+def create_classification_report(y_true, y_pred):
+    print(classification_report(y_test, predicted))
 
 def examine_the_coefficient(model, X):
     pd.DataFrame(zip(X.columns, np.transpose(model.coef_)))
@@ -126,7 +148,7 @@ def main():
 
     # # # Plot confusion matrix
     plot_confusion_matrix(y_test, predicted)
-
+    create_classification_report(y_test, predicted)
     # # Compute Accuracy
     compute_accuracy(X, y)
 
